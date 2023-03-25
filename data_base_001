@@ -1,0 +1,50 @@
+from sqlalchemy import create_engine, Column, Integer, String, ForeignKey, Boolean
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import relationship
+import sqlalchemy
+from sqlalchemy.orm import sessionmaker
+
+engine = create_engine('sqlite:///mydatabase.db') # создает экземпляр класса Engine из библиотеки SQLAlchemy. Данный объект представляет собой интерфейс для взаимодействия с базой данных. В данном случае используется SQLite и база данных будет храниться в файле mydatabase.db.
+Base = sqlalchemy.orm.declarative_base() # создает базовый класс Base, который будет использоваться для определения моделей данных.
+
+class Dictionary(Base):
+    __tablename__ = 'dictionary'
+
+    word_id = Column(Integer)
+    word = Column(String)
+    translate = Column(String)
+
+class User(Base):
+    __tablename__ = 'users'
+
+    id = Column(Integer, primary_key=True) #Создание столбца в таблице с именем id и типом данных Integer, который будет использоваться в качестве первичного ключа.
+    tg_id = Column(Integer)
+    name = Column(String) # Создание столбца в таблице с именем name и типом данных String.
+    lvl = Column(String)
+
+    user_words = relationship("User_Words", back_populates="user") # Создание связи между таблицами User и Words с помощью отношения "один-ко-многим"
+    logs = relationship("Logs", back_populates="user")
+
+class User_Words(Base): #Создание модели для таблицы адресов.
+    __tablename__ = 'user_words' # Указание имени таблицы.
+
+    id = Column(Integer, primary_key=True) # Создание столбца в таблице с именем user_id и типом данных Integer, который будет использоваться для хранения идентификатора пользователя.
+    tg_id = Column(Integer)
+    word_id = Column(Integer)
+    attempts = Column(Integer)
+    success_counter = Column(Integer)
+
+    user = relationship("User", back_populates="user_words") # Создание связи между таблицами Words и User с помощью отношения "многие-к-одному"
+
+class Logs(Base): #Создание модели для таблицы адресов.
+    __tablename__ = 'logs' # Указание имени таблицы.
+
+    id = Column(Integer, primary_key=True) # Создание столбца в таблице с именем user_id и типом данных Integer, который будет использоваться для хранения идентификатора пользователя.
+    tg_id = Column(Integer)
+    action = Column(String)
+    result = Column(Boolean)
+    comment = Column(String)
+
+    user = relationship("User", back_populates="logs") # Создание связи между таблицами Logs и User с помощью отношения "многие-к-одному"
+
+Base.metadata.create_all(engine) # Создание всех таблиц в базе данных, описанных в моделях, используя объект engine в качестве связующего звена.
